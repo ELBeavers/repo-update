@@ -1,0 +1,41 @@
+#!/usr/bin/env sh
+
+################
+# Uncomment if you want the script to always use the scripts
+# directory as the folder to look through
+#REPOSITORIES="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+REPOSITORIES=$(pwd)
+
+IFS=$'\n'
+
+for REPO in $(ls "$REPOSITORIES/")
+# for REPO in $"$REPOSITORIES"/*
+
+# GUIDANCE FROM SHELLCHECK 
+# In /usr/local/bin/repo-update line 12:
+# for REPO in $(ls "$REPOSITORIES/")
+#             ^--------------------^ SC2045 (error): Iterating over ls output is fragile. Use globs.
+# 
+# For more information:
+#   https://www.shellcheck.net/wiki/SC2045 -- Iterating over ls output is fragi...
+
+do
+  if [ -d "$REPOSITORIES/$REPO" ]
+  then
+    echo "Updating $REPOSITORIES/$REPO at $(date)"
+    if [ -d "$REPOSITORIES/$REPO/.git" ]
+    then
+      cd "$REPOSITORIES/$REPO" || return
+      git status
+#       echo "Fetching"
+#       git fetch
+      echo "Pulling"
+      git pull
+    else
+      echo "Skipping because it doesn't look like it has a .git folder."
+    fi
+    echo "Done at $(date)"
+    echo
+  fi
+done
